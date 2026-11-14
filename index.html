@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+<html lang="ml">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#176b4b">
+<link rel="manifest" href="./manifest.webmanifest">
+<title>മദീന മുസ്ഹഫ് — തുടർച്ചയായ വായന</title>
+<style>
+:root{color-scheme:light;--paper:#fffdf6;--ink:#24352b;--gold:#b18a45}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;scroll-padding-top:150px}
+body{margin:0;background:#f1eee5;color:var(--ink);font-family:system-ui,sans-serif;overflow-y:auto;-webkit-overflow-scrolling:touch}
+header{position:sticky;top:0;z-index:5;background:#fffdf6ee;backdrop-filter:blur(8px);border-bottom:1px solid #ded6c5;padding:12px}
+h1{font-size:18px;text-align:center;margin:0 0 10px}
+.controls{display:flex;gap:8px;justify-content:center;align-items:center;flex-wrap:wrap}
+button,input{font:inherit;border:1px solid #cfc4ae;border-radius:8px;padding:8px 12px;background:white;color:var(--ink)}
+button{cursor:pointer}button:disabled{opacity:.45;cursor:not-allowed}
+#pageInput{width:78px;text-align:center}
+#status,#offlineStatus{text-align:center;font-size:13px;color:#766b58;margin-top:7px}
+main{padding:16px 10px 40px;max-width:900px;margin:auto}
+.mushaf-page{width:100%;margin:0 auto 14px;padding:clamp(14px,3.5vw,30px);background:var(--paper);border:1px solid #d8cdb8;box-shadow:0 3px 14px #34281712;scroll-margin-top:150px}
+.page-heading{display:flex;justify-content:space-between;border-bottom:1px solid #b99c66;padding-bottom:8px;color:#8b6b34;font-size:13px}
+.quran-flow{padding-top:16px;display:flex;flex-wrap:wrap;flex-direction:row;direction:rtl;justify-content:center;align-items:baseline;column-gap:0;row-gap:.08em;text-align:center}
+.qword{display:inline-block;white-space:nowrap;font-size:var(--quran-font-size,clamp(34px,8.2vw,49px));line-height:var(--quran-line-height,1.9);font-weight:normal}
+.page-loading,.page-error{direction:rtl;text-align:center;color:#8a7b63;padding:30px 8px}
+.surah-start{flex:0 0 100%;width:100%;direction:rtl;text-align:center;margin:18px auto 10px;padding:12px 8px 8px;border-top:1px solid #c8b58e;max-width:720px;color:#76582c}
+.surah-name{font-size:clamp(23px,5.5vw,31px);font-weight:600;line-height:1.5}
+.surah-basmala{font-family:serif;font-size:clamp(25px,6vw,34px);line-height:1.9;margin-top:4px;color:#354b3d}
+footer{text-align:center;font-size:12px;color:#817662;padding:0 12px 24px}
+@media(max-width:600px){
+ header{padding:9px 7px}h1{font-size:16px}.controls{gap:5px}
+ button,input{padding:8px 9px;font-size:14px}
+ main{padding:10px 5px 28px}
+ .mushaf-page{padding:12px 8px 18px;margin-bottom:10px}
+ .quran-flow{padding-top:12px;row-gap:.06em}
+ .qword{font-size:var(--quran-font-size,clamp(32px,8.5vw,46px));line-height:var(--quran-line-height,1.85)}
+}
+
+:root{--ink:#26372e;--muted:#746b5c;--line:#e3dac9;--green:#355343}
+body{background:#f3f0e8;color:var(--ink)}
+header{padding:0;background:#fffdf6f2;backdrop-filter:blur(10px);border-bottom:1px solid var(--line);box-shadow:0 2px 12px #2b24130b}
+.brandbar{display:flex;align-items:center;justify-content:center;gap:10px;padding:9px 14px 5px}
+.brandbar img{width:34px;height:34px}
+.brandbar h1{margin:0;font-size:17px;font-weight:700}
+.install-banner{display:none;align-items:center;gap:10px;margin:8px auto 10px;padding:10px 12px;max-width:860px;width:calc(100% - 20px);border:1px solid #d9c8a5;border-radius:14px;background:#fbf5e8}
+.install-banner.show{display:flex}
+.app-mark{width:38px;height:38px;flex:0 0 38px}
+.app-mark img{width:100%;height:100%}
+.install-copy{flex:1;min-width:0}
+.install-title{font-size:14px;font-weight:700}
+.install-hint{font-size:12px;color:var(--muted);margin-top:2px;line-height:1.45}
+.install-actions{display:flex;gap:6px;align-items:center}
+.primary-btn{background:var(--green)!important;color:#fff!important;border-color:var(--green)!important;font-weight:700}
+.dismiss-btn{width:36px;height:36px;padding:4px}
+.toolbar{max-width:900px;margin:auto;padding:8px 12px 11px}
+.nav-row{display:flex;gap:7px;align-items:center;justify-content:center;flex-wrap:wrap}
+.nav-row button,.nav-row input{border:1px solid #d7cdbb;border-radius:10px;padding:9px 12px;background:#fff;color:var(--ink)}
+.nav-row button{font-weight:600}
+#pageInput{width:70px;text-align:center}
+#downloadOffline{font-size:13px}
+.status-row{display:flex;justify-content:center;gap:12px;flex-wrap:wrap;padding-top:7px}
+#status,#offlineStatus{font-size:12px;color:var(--muted);margin:0}
+main{padding:14px 10px 42px}
+.mushaf-page{border-radius:12px;border-color:#e1d7c5;box-shadow:0 3px 16px #3328170b}
+.surah-start{flex:0 0 100%;width:100%}
+@media(max-width:600px){
+ .brandbar{padding:8px 10px 4px}.brandbar h1{font-size:15px}
+ .install-banner{align-items:flex-start;padding:9px 10px;margin:7px auto}
+ .install-actions{flex-direction:column}
+ .toolbar{padding:7px 8px 10px}
+ .nav-row{gap:5px}
+ .nav-row button,.nav-row input{padding:8px 9px;font-size:13px}
+ #downloadOffline{flex:1 1 100%;margin-top:2px}
+ main{padding:9px 5px 28px}
+ .mushaf-page{border-radius:9px}
+}
+
+
+.app-nav{display:flex;align-items:center;gap:9px;max-width:900px;margin:auto;padding:7px 12px 3px}
+.app-nav button{border:0;background:transparent;color:var(--ink);font-size:16px;padding:7px 10px;border-radius:9px}
+.app-nav button:first-child{font-size:23px}
+.app-nav button:hover{background:#8882}
+.app-shade{position:fixed;inset:0;background:#0009;z-index:20}
+.app-sheet{position:fixed;z-index:21;left:0;right:0;bottom:0;max-height:86dvh;background:#1d1d1f;color:#eee;border:1px solid #39393c;border-radius:18px 18px 0 0;box-shadow:0 -8px 30px #0006;overflow:hidden}
+.app-sheet[hidden],.app-shade[hidden]{display:none}
+.sheet-head{display:flex;justify-content:space-between;align-items:center;padding:15px 18px;border-bottom:1px solid #39393c;font-size:18px}
+.sheet-head button{background:transparent;color:inherit;border:0;font-size:23px}
+.sheet-body{padding:14px 18px 28px;overflow:auto;max-height:calc(86dvh - 58px)}
+.sheet-body h3{font-size:16px;margin:12px 0 9px}
+.setting-row,.field-label{display:flex;justify-content:space-between;align-items:center;gap:12px;width:100%;padding:13px 12px;margin:6px 0;border:1px solid #444;border-radius:10px;background:#252527;color:#eee;text-align:left}
+.setting-row select,.field-label select,.field-label input{max-width:58%;background:#171719;color:#eee;border:1px solid #555;border-radius:8px;padding:9px}
+.field-label{display:block;font-size:14px}
+.field-label input,.field-label select{display:block;max-width:none;width:100%;margin-top:8px}
+.muted-note{font-size:12px;color:#aaa;line-height:1.5;margin:10px 2px}
+.choice-group{margin:17px 0}
+.choice-row{display:grid;grid-template-columns:repeat(4,1fr);gap:7px;margin-top:8px}
+.choice-row button,.quick-grid button{background:#242426;color:#ddd;border:1px solid #888;border-radius:8px;padding:10px 3px}
+.choice-row button.selected{background:#eee;color:#171717;font-weight:700}
+.quick-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-top:8px}
+.play-main{display:block;width:100%;background:#eee!important;color:#151515!important;border:0!important;border-radius:999px!important;padding:14px!important;font-size:17px;font-weight:700}
+.wide-input{width:100%;background:#252527;color:#eee;border:1px solid #555;border-radius:10px;padding:13px}
+.search-result{padding:12px;border-bottom:1px solid #444;cursor:pointer;line-height:1.6}
+.stats-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:9px}
+.stat-card{padding:14px;background:#252527;border:1px solid #444;border-radius:12px;display:flex;flex-direction:column;gap:8px}
+.stat-card span{font-size:12px;color:#bbb}.stat-card b{font-size:17px}
+.activity-log{padding:12px;background:#252527;border:1px solid #444;border-radius:10px;font-size:13px;line-height:1.8}
+.reader-fab{position:fixed;z-index:8;bottom:18px;left:14px;right:14px;display:flex;align-items:center;gap:9px;pointer-events:none}
+.reader-fab button{pointer-events:auto;border:0;border-radius:50%;width:48px;height:48px;background:#252527;color:white;box-shadow:0 3px 14px #0004;font-size:20px}
+body.dark{background:#111;color:#eee;color-scheme:dark}
+body.dark header{background:#171719f2;border-color:#333}
+body.dark .mushaf-page{background:#171719;border-color:#303033;box-shadow:none}
+body.dark .page-heading{color:#b9a77e;border-color:#4a4437}
+body.dark .surah-start{color:#d8c28f;border-color:#665638}
+body.dark .surah-basmala{color:#e5ddca}
+body.dark button,body.dark input{color:#eee;background:#29292c;border-color:#555}
+body.dark .app-nav button{background:transparent}
+body.dark #status,body.dark #offlineStatus{color:#aaa}
+@media(max-width:600px){
+ .app-nav{gap:3px;padding:5px 7px;justify-content:space-between}
+ .app-nav button{font-size:14px;padding:6px}
+ .app-nav button:first-child{font-size:21px}
+ .reader-fab{bottom:12px;left:9px;right:9px}
+ .reader-fab button{width:42px;height:42px}
+ .sheet-body{padding:12px 13px 25px}
+}
+
+
+/* QCF V1 approved visual system */
+:root{--qcf-emerald:#176b4b;--qcf-gold:#c7a45b;--qcf-paper:#fffaf0;--qcf-ink:#23352b}
+body{background:var(--qcf-paper);color:var(--qcf-ink)}
+.quran-flow{display:flex;flex-wrap:wrap;direction:rtl;justify-content:center;column-gap:0;row-gap:0;text-align:center}
+.qword{white-space:nowrap;display:inline-block;font-size:var(--quran-font-size,46px);line-height:1.9}
+.selected-layout{border:1px solid #55c99a;border-radius:12px;padding:14px;display:flex;justify-content:space-between;align-items:center}
+.selected-layout small{display:block;color:#aaa;font-size:12px;margin-top:4px}
+.font-control-card{background:#252527;border:1px solid #444;border-radius:13px;padding:15px;margin:10px 0}
+.font-control-card label{display:block;font-weight:650;margin-bottom:14px}
+.font-slider-row{display:flex;align-items:center;gap:12px;font-size:18px}
+.font-slider-row input{flex:1;min-width:0;accent-color:#55d6a2}
+.auto-status{padding:12px;border:1px solid #444;border-radius:10px;background:#252527;margin:8px 0;text-align:center}
+.auto-status.running{border-color:#55d6a2;color:#8ce6bd}
+#autoScrollSpeed{accent-color:#55d6a2}
+body.emerald{background:#e9f1e9;color:#183b2b}
+body.emerald header{background:#f4f8f0f2;border-color:#c8d9c8}
+body.emerald .mushaf-page{background:#fffdf5;border-color:#d8c69b}
+body.emerald .page-heading,body.emerald .surah-start{color:#38664b}
+body.emerald .surah-basmala{color:#24553c}
+body.emerald .app-sheet{background:#f6f7ef;color:#183b2b;border-color:#d1ddcf}
+body.emerald .sheet-head{border-color:#d1ddcf}
+body.emerald .setting-row,body.emerald .field-label,body.emerald .auto-status,body.emerald .font-control-card,body.emerald .stat-card,body.emerald .activity-log{background:#fff;border-color:#d1ddcf;color:#183b2b}
+body.emerald .muted-note,body.emerald .selected-layout small{color:#607466}
+body.emerald .field-label input,body.emerald .setting-row select{background:#f4f7f1;color:#183b2b;border-color:#c7d5c6}
+body.emerald .play-main{background:#176b4b!important;color:white!important}
+body.emerald .reader-fab button{background:#176b4b;color:white}
+
+</style>
+</head>
+<body class="dark">
+<header>
+  <div class="brandbar">
+    <img src="./icon.svg" alt="" width="34" height="34">
+    <h1>مصحف المدينة — QCF V1</h1>
+  </div>
+  <div id="installBanner" class="install-banner" role="region" aria-label="ആപ്പ് ഇൻസ്റ്റാൾ ചെയ്യുക">
+    <div class="app-mark" aria-hidden="true"><img src="./icon.svg" alt=""></div>
+    <div class="install-copy">
+      <div class="install-title">ഖുർആൻ ആപ്പായി ഇൻസ്റ്റാൾ ചെയ്യാം</div>
+      <div id="installHint" class="install-hint">ഹോം സ്ക്രീനിൽ ചേർത്ത് വേഗത്തിൽ തുറക്കാം; ഓഫ്‌ലൈനായും വായിക്കാം.</div>
+    </div>
+    <div class="install-actions">
+      <button id="installApp" class="primary-btn" type="button">ഇൻസ്റ്റാൾ</button>
+      <button id="dismissInstall" class="dismiss-btn" type="button" aria-label="അറിയിപ്പ് അടയ്ക്കുക">✕</button>
+    </div>
+  </div>
+  <div class="app-nav">
+    <button type="button" id="openMenu" aria-label="മെനു">☰</button>
+    <button type="button" id="openDashboard">Dashboard</button>
+    <button type="button" id="openSearch" aria-label="തിരയുക">⌕</button>
+    <button type="button" id="openSettings" aria-label="ക്രമീകരണങ്ങൾ">⚙</button>
+  </div>
+  <div class="toolbar">
+    <div class="nav-row">
+      <button id="prev" type="button" aria-label="മുൻ പേജ്">‹ മുൻപ്</button>
+      <label for="pageInput">പേജ്</label>
+      <input id="pageInput" type="number" min="1" max="604" value="1" inputmode="numeric">
+      <span>/ 604</span>
+      <button id="go" type="button">പോകുക</button>
+      <button id="next" type="button" aria-label="അടുത്ത പേജ്">അടുത്തത് ›</button>
+      <button id="downloadOffline" type="button">↓ മുഴുവൻ ഖുർആൻ ഓഫ്‌ലൈനായി സൂക്ഷിക്കുക</button>
+    </div>
+    <div class="status-row">
+      <div id="status" role="status">ഖുർആൻ ലോഡ് ചെയ്യുന്നു…</div>
+      <div id="offlineStatus">ഓഫ്‌ലൈൻ ഡാറ്റ പരിശോധിക്കുന്നു…</div>
+    </div>
+  </div>
+</header>
+<main id="quranStream" aria-label="മുഴുവൻ ഖുർആൻ — തുടർച്ചയായ വായന"></main>
+
+<div id="appShade" class="app-shade" hidden></div>
+<section id="settingsSheet" class="app-sheet" aria-label="Settings" hidden>
+ <div class="sheet-head"><strong>Settings / ക്രമീകരണങ്ങൾ</strong><button data-close>✕</button></div>
+ <div class="sheet-body">
+  <h3>Quran Appearance</h3>
+  <button class="setting-row" id="openLayout">Mushaf Layout <span>›</span></button>
+  <button class="setting-row" id="openHidden">Memorization / മനഃപാഠം <span>›</span></button>
+  <button class="setting-row" id="bookmarkCurrent">Bookmark current page <span>＋</span></button>
+  <button class="setting-row" id="openBookmarks">My Bookmarks <span>›</span></button>
+  <h3>Appearance</h3>
+  <div class="setting-row">Theme <select id="themeSelect"><option value="emerald">Emerald Islamic</option><option value="dark">Night Mushaf</option><option value="system">System</option></select></div>
+  <h3>Downloads</h3>
+  <button class="setting-row" id="settingsDownload">Download all Quran pages <span>↓</span></button>
+ </div>
+</section>
+<section id="layoutSheet" class="app-sheet" aria-label="Mushaf Layout" hidden>
+ <div class="sheet-head"><strong>Mushaf Layout / മുസ്ഹഫ് ക്രമീകരണം</strong><button data-close aria-label="അടയ്ക്കുക">✕</button></div>
+ <div class="sheet-body">
+  <h3>Quran Appearance</h3>
+  <div class="setting-row selected-layout"><span><strong>Quran Text</strong><small>ഖുർആൻ അറബി ടെക്സ്റ്റ്</small></span><span aria-label="തിരഞ്ഞെടുത്തത്">✓</span></div>
+  <div class="font-control-card">
+   <label for="fontSizeControl">Font Size — Quranic Arabic</label>
+   <div class="font-slider-row"><span>A−</span><input id="fontSizeControl" type="range" min="28" max="64" step="1" value="46"><span>A+</span></div>
+   <div class="muted-note">വാക്കുകൾ മുറിക്കാതെ, സ്ക്രീൻ വീതിക്കും അക്ഷരവലുപ്പത്തിനും അനുസരിച്ച് വരികൾ ക്രമീകരിക്കും.</div>
+  </div>
+  <h3>Auto Scroll</h3>
+  <div class="auto-status" id="autoScrollStatus" role="status">ഓട്ടോ സ്ക്രോൾ നിർത്തിയിരിക്കുന്നു</div>
+  <button id="autoScrollToggle" class="play-main" type="button">▶ ആരംഭിക്കുക</button>
+  <label class="field-label" for="autoScrollSpeed">Scrolling Speed <output id="autoScrollSpeedValue">മിതം</output>
+   <input id="autoScrollSpeed" type="range" min="1" max="10" step="1" value="4">
+  </label>
+  <p class="muted-note">പാനൽ അടച്ചാലും ഓട്ടോ സ്ക്രോൾ തുടരും. വീണ്ടും ആരംഭിക്കുമ്പോൾ നിർത്തിയ സ്ഥാനത്തുനിന്ന് തുടരും.</p>
+ </div>
+</section>
+<section id="searchSheet" class="app-sheet" aria-label="Search" hidden>
+ <div class="sheet-head"><strong>Search Quran</strong><button data-close>✕</button></div>
+ <div class="sheet-body">
+  <input id="searchQuery" class="wide-input" placeholder="Arabic / English keyword">
+  <button id="runSearch" class="play-main">Search</button>
+  <div id="searchResults"></div>
+ </div>
+</section>
+<section id="dashboardSheet" class="app-sheet" aria-label="Dashboard" hidden>
+ <div class="sheet-head"><strong>Dashboard</strong><button data-close>✕</button></div>
+ <div class="sheet-body">
+  <h3>Progress</h3>
+  <div class="stats-grid">
+   <div class="stat-card"><span>Reading progress</span><b id="dashPage">Page 1 / 604</b></div>
+   <div class="stat-card"><span>Pages marked for memorization</span><b id="dashMarks">0 pages</b></div>
+   <div class="stat-card"><span>Pages opened</span><b id="dashOpened">0</b></div>
+   <div class="stat-card"><span>Offline pages</span><b id="dashOffline">0 / 604</b></div>
+  </div>
+  <h3>Activity</h3><div id="activityLog" class="activity-log">ഈ ഉപകരണത്തിൽ വായനാ പ്രവർത്തനങ്ങൾ രേഖപ്പെടുത്തും.</div>
+  <button id="continueReading" class="play-main">Continue Reading</button>
+  <p class="muted-note">പുരോഗതി ഈ ബ്രൗസറിലെ ഉപകരണത്തിൽ മാത്രം സൂക്ഷിക്കുന്നു; അക്കൗണ്ട്/ക്ലൗഡ് സിങ്ക് ഇതിൽ ഉൾപ്പെട്ടിട്ടില്ല.</p>
+ </div>
+</section>
+<section id="bookmarksSheet" class="app-sheet" aria-label="Bookmarks" hidden>
+ <div class="sheet-head"><strong>Bookmarks / അടയാളപ്പെടുത്തിയ പേജുകൾ</strong><button data-close aria-label="അടയ്ക്കുക">✕</button></div>
+ <div class="sheet-body"><div id="bookmarkList" class="activity-log">ഇതുവരെ Bookmark ചെയ്തിട്ടില്ല.</div></div>
+</section>
+<section id="hiddenSheet" class="app-sheet" aria-label="Memorization" hidden>
+ <div class="sheet-head"><strong>Memorization / മനഃപാഠം</strong><button data-close>✕</button></div>
+ <div class="sheet-body">
+  <p>നിലവിലെ പേജിലെ ആയത്തുകൾ മനഃപാഠമായി അടയാളപ്പെടുത്തുക.</p>
+  <button id="markCurrentPage" class="play-main">ഈ പേജ് മനഃപാഠമായി അടയാളപ്പെടുത്തുക</button>
+  <div id="memorizationStatus" class="muted-note"></div>
+ </div>
+</section>
+<div class="reader-fab"><button id="fabTop" type="button" aria-label="Mushaf Layout and Auto Scroll" title="Mushaf Layout / Auto Scroll">⌃</button></div>
+
+<footer>QCF V1 • 604 صفحة • തുടർച്ചയായ സ്ക്രോളിംഗ് വായന</footer>
+<script>
+(()=>{"use strict";
+const API="https://api.quran.com/api/v4",FB="https://verses.quran.foundation/fonts/quran/hafs/v1/woff2";
+const DB="QCFV1OfflineDB",STORE="pages",fonts=new Map(),$=id=>document.getElementById(id);
+let currentPage=1,dbp,chaptersPromise=null,basmalaPromise=null,previousSurahByPage=new Map();
+function db(){if(dbp)return dbp;dbp=new Promise((ok,no)=>{const r=indexedDB.open(DB,1);r.onupgradeneeded=()=>{if(!r.result.objectStoreNames.contains(STORE))r.result.createObjectStore(STORE,{keyPath:"page"});};r.onsuccess=()=>ok(r.result);r.onerror=()=>no(r.error);});return dbp;}
+async function read(p){const d=await db();return new Promise((ok,no)=>{const r=d.transaction(STORE).objectStore(STORE).get(p);r.onsuccess=()=>ok(r.result||null);r.onerror=()=>no(r.error);});}
+async function write(x){const d=await db();return new Promise((ok,no)=>{const t=d.transaction(STORE,"readwrite");t.objectStore(STORE).put(x);t.oncomplete=ok;t.onerror=()=>no(t.error);t.onabort=()=>no(t.error);});}
+async function get(p){
+ let x=await read(p);if(x?.words?.length&&x.fontBlob&&x.verses?.length)return x;
+ const a=await fetch(`${API}/verses/by_page/${p}?words=true&word_fields=code_v1,text_uthmani&per_page=all&mushaf=2`);
+ if(!a.ok)throw Error("Quran API "+a.status);
+ const j=await a.json(),verses=j.verses||[],words=verses.flatMap(v=>(v.words||[]).map(w=>({...w,chapter_id:v.chapter_id,verse_number:v.verse_number}))).filter(w=>w.char_type_name!=="pause"&&(w.code_v1||w.text_uthmani)).map(w=>({code_v1:w.code_v1||"",text_uthmani:w.text_uthmani||"",chapter_id:w.chapter_id,verse_number:w.verse_number,word_position:w.position}));
+ if(!words.length)throw Error("QCF പേജ് ഡാറ്റ ലഭിച്ചില്ല");
+ const f=await fetch(`${FB}/p${p}.woff2`);if(!f.ok)throw Error("Font "+f.status);
+ x={page:p,words,verses:verses.map(v=>({chapter_id:v.chapter_id,verse_number:v.verse_number})),fontBlob:await f.blob(),savedAt:Date.now()};await write(x);return x;
+}
+async function font(p,b){
+ if(fonts.has(p))return fonts.get(p);
+ const promise=(async()=>{const u=URL.createObjectURL(b),f=new FontFace("QCFV1Page"+p,`url("${u}")`);document.fonts.add(await f.load());return u;})();
+ fonts.set(p,promise);try{return await promise;}catch(e){fonts.delete(p);throw e;}
+}
+async function count(){const d=await db();return new Promise((ok,no)=>{const r=d.transaction(STORE).objectStore(STORE).count();r.onsuccess=()=>ok(r.result);r.onerror=()=>no(r.error);});}
+async function updateOffline(){try{const n=await count();$("offlineStatus").textContent=n===604?"ഓഫ്‌ലൈനിന് തയ്യാറാണ്: 604 / 604 പേജുകൾ":`ഓഫ്‌ലൈൻ സംഭരണം: ${n} / 604 പേജുകൾ`;}catch(e){$("offlineStatus").textContent="IndexedDB ലഭ്യമല്ല";}}
+
+async function getChapters(){
+ if(!chaptersPromise)chaptersPromise=(async()=>{
+  const r=await fetch(`${API}/chapters?language=ar`);
+  if(!r.ok)throw Error("Chapters API "+r.status);
+  const j=await r.json();return new Map((j.chapters||[]).map(c=>[c.id,c]));
+ })();
+ return chaptersPromise;
+}
+async function getBasmala(){
+ if(!basmalaPromise)basmalaPromise=(async()=>{
+  // Use the Arabic Uthmani text supplied by Quran.com API (Al-Fatiha 1:1).
+  const r=await fetch(`${API}/verses/by_key/1:1?fields=text_uthmani`);
+  if(!r.ok)throw Error("Basmala API "+r.status);
+  const j=await r.json();return j.verse?.text_uthmani||"بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ";
+ })();
+ return basmalaPromise;
+}
+function surahIdsInPage(verses){
+ return [...new Set((verses||[]).map(v=>v.chapter_id).filter(Boolean))];
+}
+function makePage(p){
+ const section=document.createElement("section");section.className="mushaf-page";section.id="page-"+p;section.dataset.page=p;
+ section.innerHTML=`<div class="page-heading"><span>مصحف المدينة</span><span>${new Intl.NumberFormat("ar").format(p)}</span></div><div class="page-loading">يتم تحميل النص القرآني…</div>`;
+ return section;
+}
+const stream=$("quranStream"),sections=[];
+for(let p=1;p<=604;p++){const s=makePage(p);sections.push(s);stream.appendChild(s);}
+const loading=new Set();
+async function loadPage(p){
+ const section=sections[p-1];if(section.dataset.loaded==="1"||loading.has(p))return;
+ loading.add(p);
+ try{
+  const x=await get(p);await font(p,x.fontBlob);
+  const flow=document.createElement("div");flow.className="quran-flow";
+  const chapters=await getChapters();
+  let lastSurahHeading="";
+  for(const w of x.words){
+   if(Number(w.verse_number)===1 && Number(w.word_position)===1 && w.chapter_id && lastSurahHeading!==String(w.chapter_id)){
+    const ch=chapters.get(w.chapter_id);
+    if(ch){
+     const heading=document.createElement("div");heading.className="surah-start";
+     const name=document.createElement("div");name.className="surah-name";name.textContent=ch.name_arabic||ch.name_simple||"";heading.appendChild(name);
+     if(ch.bismillah_pre){const b=document.createElement("div");b.className="surah-basmala";b.textContent=await getBasmala();heading.appendChild(b);}
+     flow.appendChild(heading);lastSurahHeading=String(w.chapter_id);
+    }
+   }
+   const span=document.createElement("span");span.className="qword";span.textContent=w.code_v1||w.text_uthmani;span.style.fontFamily=`"QCFV1Page${p}", "Traditional Arabic", serif`;flow.appendChild(span);
+  }
+  section.querySelector(".page-loading")?.remove();section.appendChild(flow);
+  section.dataset.loaded="1";
+ }catch(e){const el=section.querySelector(".page-loading");if(el){el.className="page-error";el.textContent="ഈ പേജ് ലഭ്യമാക്കാനായില്ല. ഇന്റർനെറ്റ് അല്ലെങ്കിൽ ഓഫ്‌ലൈൻ ഡാറ്റ പരിശോധിക്കുക.";}}
+ finally{loading.delete(p);}
+}
+const loadObserver=new IntersectionObserver(entries=>{entries.forEach(entry=>{if(entry.isIntersecting){const p=Number(entry.target.dataset.page);loadPage(p);if(p>1)loadPage(p-1);if(p<604)loadPage(p+1);}});},{rootMargin:"1200px 0px"});
+sections.forEach(s=>loadObserver.observe(s));
+const activeObserver=new IntersectionObserver(entries=>{
+ const visible=entries.filter(e=>e.isIntersecting).sort((a,b)=>b.intersectionRatio-a.intersectionRatio);
+ if(visible.length){
+  currentPage=Number(visible[0].target.dataset.page);
+  $("pageInput").value=currentPage;
+  $("prev").disabled=currentPage===1;
+  $("next").disabled=currentPage===604;
+  $("status").textContent=`صفحة ${currentPage} — القراءة متواصلة`;
+  if(typeof notePage==="function")notePage(currentPage);
+ }
+},{rootMargin:"-18% 0px -65% 0px",threshold:[0,.1,.25,.5]});
+sections.forEach(s=>activeObserver.observe(s));
+function go(p){p=Math.max(1,Math.min(604,Number(p)||1));currentPage=p;$("pageInput").value=p;loadPage(p);sections[p-1].scrollIntoView({behavior:"smooth",block:"start"});}
+async function download(){
+ const b=$("downloadOffline");if(!navigator.onLine){$("offlineStatus").textContent="ആദ്യ ഡൗൺലോഡിന് ഇന്റർനെറ്റ് വേണം";return;}
+ b.disabled=true;
+ try{for(let p=1;p<=604;p++){ $("offlineStatus").textContent=`ഡൗൺലോഡ് ചെയ്യുന്നു: ${p} / 604`;await get(p);if(p%3===0)await new Promise(r=>setTimeout(r,0));}
+ $("offlineStatus").textContent="പൂർണ്ണം: 604 / 604 പേജുകൾ ഓഫ്‌ലൈനായി സൂക്ഷിച്ചു";
+ }catch(e){$("offlineStatus").textContent=`താൽക്കാലിക തടസ്സം: ${e.message}. വീണ്ടും അമർത്തിയാൽ തുടരും.`;}
+ finally{b.disabled=false;updateOffline();}
+}
+$("prev").onclick=()=>go(currentPage-1);$("next").onclick=()=>go(currentPage+1);$("go").onclick=()=>go($("pageInput").value);
+$("downloadOffline").onclick=download;$("pageInput").addEventListener("keydown",e=>{if(e.key==="Enter")go($("pageInput").value);});
+document.addEventListener("keydown",e=>{if(e.key==="ArrowDown"&&e.altKey)go(currentPage+1);if(e.key==="ArrowUp"&&e.altKey)go(currentPage-1);});
+
+
+// App panels, local progress and practical playback controls.
+const panels=["settingsSheet","layoutSheet","searchSheet","dashboardSheet","hiddenSheet","bookmarksSheet"];
+const shade=document.getElementById("appShade");
+function openPanel(id){panels.forEach(x=>document.getElementById(x).hidden=(x!==id));shade.hidden=false;document.body.style.overflow="hidden";}
+function closePanels(){panels.forEach(x=>document.getElementById(x).hidden=true);shade.hidden=true;document.body.style.overflow="";}
+document.querySelectorAll("[data-close]").forEach(b=>b.addEventListener("click",closePanels));
+shade.addEventListener("click",closePanels);
+document.getElementById("openSettings").onclick=()=>openPanel("settingsSheet");
+document.getElementById("openLayout").onclick=()=>openPanel("layoutSheet");
+document.getElementById("openSearch").onclick=()=>openPanel("searchSheet");
+document.getElementById("openDashboard").onclick=()=>{refreshDashboard();openPanel("dashboardSheet");};
+document.getElementById("openMenu").onclick=()=>openPanel("settingsSheet");
+document.getElementById("openHidden").onclick=()=>openPanel("hiddenSheet");
+function getBookmarks(){try{return JSON.parse(localStorage.getItem("qcfBookmarks")||"[]");}catch(e){return [];}}
+function saveBookmarks(items){localStorage.setItem("qcfBookmarks",JSON.stringify(items));}
+function renderBookmarks(){
+ const out=document.getElementById("bookmarkList"),items=getBookmarks();out.innerHTML="";
+ if(!items.length){out.textContent="ഇതുവരെ Bookmark ചെയ്തിട്ടില്ല.";return;}
+ items.forEach(item=>{
+  const row=document.createElement("div");row.className="search-result";
+  const goBtn=document.createElement("button");goBtn.type="button";goBtn.textContent=`പേജ് ${item.page} തുറക്കുക`;
+  goBtn.onclick=()=>{closePanels();go(item.page);};
+  const del=document.createElement("button");del.type="button";del.textContent="നീക്കുക";del.onclick=()=>{saveBookmarks(getBookmarks().filter(x=>x.page!==item.page));renderBookmarks();};
+  const title=document.createElement("div");title.textContent=`പേജ് ${item.page}`;
+  row.append(title,goBtn,del);out.appendChild(row);
+ });
+}
+document.getElementById("bookmarkCurrent").onclick=()=>{
+ const items=getBookmarks();if(!items.some(x=>x.page===currentPage))items.unshift({page:currentPage,created:Date.now()});
+ saveBookmarks(items);document.getElementById("bookmarkCurrent").textContent="Bookmarked ✓";
+};
+document.getElementById("openBookmarks").onclick=()=>{renderBookmarks();openPanel("bookmarksSheet");};
+document.getElementById("fabTop").onclick=()=>openPanel("layoutSheet");
+document.getElementById("continueReading").onclick=closePanels;
+document.getElementById("settingsDownload").onclick=()=>{closePanels();download();};
+
+const storeKey="qcfReaderProgressV2";
+function getProgress(){try{return JSON.parse(localStorage.getItem(storeKey)||'{"pages":[],"memorized":[],"activity":[]}');}catch(e){return {pages:[],memorized:[],activity:[]};}}
+function saveProgress(x){localStorage.setItem(storeKey,JSON.stringify(x));}
+function notePage(page){const x=getProgress();if(!x.pages.includes(page))x.pages.push(page);x.activity.unshift({page,time:new Date().toLocaleString()});x.activity=x.activity.slice(0,12);saveProgress(x);}
+function refreshDashboard(){
+ const x=getProgress();
+ document.getElementById("dashPage").textContent=`Page ${currentPage} / 604`;
+ document.getElementById("dashMarks").textContent=`${x.memorized.length} pages`;
+ document.getElementById("dashOpened").textContent=String(x.pages.length);
+ document.getElementById("dashOffline").textContent=`${document.getElementById("offlineStatus").textContent.match(/\d+\s*\/\s*604/)?.[0]||"0 / 604"}`;
+ document.getElementById("activityLog").textContent=x.activity.length?x.activity.slice(0,6).map(a=>`Page ${a.page} — ${a.time}`).join(" • "):"ഇതുവരെ വായനാ പ്രവർത്തനം രേഖപ്പെടുത്തിയിട്ടില്ല.";
+}
+document.getElementById("markCurrentPage").onclick=()=>{
+ const x=getProgress();if(!x.memorized.includes(currentPage))x.memorized.push(currentPage);saveProgress(x);
+ document.getElementById("memorizationStatus").textContent=`Page ${currentPage} മനഃപാഠമായി അടയാളപ്പെടുത്തി.`;
+ refreshDashboard();
+};
+const originalGo=go;
+go=function(p){originalGo(p);notePage(Math.max(1,Math.min(604,Number(p)||1)));};
+// Theme preference: Emerald Islamic / Night Mushaf / System.
+const themeSelect=document.getElementById("themeSelect");
+function applyTheme(v){
+ document.body.classList.toggle("dark",v==="dark"||(v==="system"&&matchMedia("(prefers-color-scheme: dark)").matches));
+ document.body.classList.toggle("emerald",v==="emerald");
+}
+themeSelect.value=localStorage.getItem("qcfTheme")||"emerald";applyTheme(themeSelect.value);
+themeSelect.addEventListener("change",()=>{localStorage.setItem("qcfTheme",themeSelect.value);applyTheme(themeSelect.value);});
+
+// Quran text font sizing: same API word spacing; natural word-boundary wrapping.
+const fontSizeControl=document.getElementById("fontSizeControl");
+const savedFontSize=Number(localStorage.getItem("qcfFontSize")||46);
+fontSizeControl.value=Math.max(28,Math.min(64,savedFontSize));
+document.documentElement.style.setProperty("--quran-font-size",fontSizeControl.value+"px");
+fontSizeControl.addEventListener("input",e=>{
+ const size=Math.max(28,Math.min(64,Number(e.target.value)));
+ document.documentElement.style.setProperty("--quran-font-size",size+"px");
+ localStorage.setItem("qcfFontSize",String(size));
+});
+
+// Auto Scroll: remembers the live scroll position; pause/resume continues in place.
+let autoScrollRunning=false,autoScrollFrame=0,lastFrameTime=0,autoScrollSpeed=4;
+const autoBtn=document.getElementById("autoScrollToggle");
+const autoStatus=document.getElementById("autoScrollStatus");
+const speedControl=document.getElementById("autoScrollSpeed");
+const speedValue=document.getElementById("autoScrollSpeedValue");
+function speedLabel(v){return v<=3?"മന്ദം":v<=7?"മിതം":"വേഗം";}
+function stopAutoScroll(){
+ autoScrollRunning=false;cancelAnimationFrame(autoScrollFrame);autoScrollFrame=0;
+ autoBtn.textContent="▶ വീണ്ടും ആരംഭിക്കുക";autoStatus.textContent="ഓട്ടോ സ്ക്രോൾ താൽക്കാലികമായി നിർത്തി";autoStatus.classList.remove("running");
+}
+function autoScrollTick(ts){
+ if(!autoScrollRunning)return;
+ if(!lastFrameTime)lastFrameTime=ts;
+ const delta=Math.min(50,ts-lastFrameTime);lastFrameTime=ts;
+ window.scrollBy(0,delta*(0.012+autoScrollSpeed*0.009));
+ if(window.innerHeight+window.scrollY>=document.documentElement.scrollHeight-2){stopAutoScroll();autoStatus.textContent="ഖുർആൻ വായനയുടെ അവസാനം എത്തി";return;}
+ autoScrollFrame=requestAnimationFrame(autoScrollTick);
+}
+function startAutoScroll(){
+ if(autoScrollRunning)return;
+ autoScrollRunning=true;lastFrameTime=0;autoBtn.textContent="Ⅱ നിർത്തുക";autoStatus.textContent="ഓട്ടോ സ്ക്രോൾ പ്രവർത്തിക്കുന്നു";autoStatus.classList.add("running");
+ autoScrollFrame=requestAnimationFrame(autoScrollTick);
+}
+autoBtn.addEventListener("click",()=>autoScrollRunning?stopAutoScroll():startAutoScroll());
+speedControl.value=localStorage.getItem("qcfAutoSpeed")||"4";autoScrollSpeed=Number(speedControl.value);
+speedValue.textContent=speedLabel(autoScrollSpeed);
+speedControl.addEventListener("input",e=>{autoScrollSpeed=Number(e.target.value);speedValue.textContent=speedLabel(autoScrollSpeed);localStorage.setItem("qcfAutoSpeed",String(autoScrollSpeed));});
+let userScrollPause=false,scrollPauseTimer=0;
+window.addEventListener("wheel",e=>{if(autoScrollRunning&&!e.ctrlKey)stopAutoScroll();},{passive:true});
+window.addEventListener("touchstart",()=>{if(autoScrollRunning)stopAutoScroll();},{passive:true});
+window.addEventListener("pointerdown",e=>{if(autoScrollRunning&&e.pointerType==="touch")stopAutoScroll();},{passive:true});
+
+// Quran search via Quran.com API.
+document.getElementById("runSearch").onclick=async()=>{
+ const q=document.getElementById("searchQuery").value.trim(),out=document.getElementById("searchResults");
+ if(!q){out.textContent="തിരയാനുള്ള വാക്ക് നൽകുക.";return;}
+ out.textContent="തിരയുന്നു…";
+ try{
+  const r=await fetch(`${API}/search?q=${encodeURIComponent(q)}&size=15`);
+  if(!r.ok)throw Error("Search API "+r.status);
+  const j=await r.json(),results=j.search?.results||[];
+  out.innerHTML="";
+  if(!results.length){out.textContent="ഫലം ലഭിച്ചില്ല.";return;}
+  results.forEach(item=>{
+   const d=document.createElement("div");d.className="search-result";
+   d.textContent=`${item.verse_key||""} — ${item.text||item.text_uthmani||""}`;
+   d.onclick=()=>{const pg=Number(item.page_number||1);closePanels();go(pg);};
+   out.appendChild(d);
+  });
+ }catch(e){out.textContent="തിരയൽ പരാജയപ്പെട്ടു. ഇന്റർനെറ്റ്/API പരിശോധിക്കുക.";}
+};
+
+// PWA install banner: native prompt where supported; iOS Add to Home Screen guidance otherwise.
+let deferredInstallPrompt=null;
+const installBanner=document.getElementById("installBanner");
+const installButton=document.getElementById("installApp");
+const installHint=document.getElementById("installHint");
+const standalone=window.matchMedia("(display-mode: standalone)").matches || window.navigator.standalone===true;
+const ios=/iphone|ipad|ipod/i.test(navigator.userAgent);
+function showInstallBanner(kind){
+ if(standalone){installBanner.classList.remove("show");return;}
+ installBanner.classList.add("show");
+ if(kind==="ios"){
+  installButton.textContent="എങ്ങനെ?";
+  installHint.textContent="Safari-യിൽ Share ബട്ടൺ അമർത്തി “Add to Home Screen” തിരഞ്ഞെടുക്കുക.";
+ }else if(kind==="manual"){
+  installButton.textContent="ഇൻസ്റ്റാൾ";
+  installHint.textContent="ബ്രൗസർ മെനുവിൽ “Install app” അല്ലെങ്കിൽ “Add to Home screen” തിരഞ്ഞെടുക്കുക.";
+ }else{
+  installButton.textContent="ഇൻസ്റ്റാൾ";
+  installHint.textContent="ഹോം സ്ക്രീനിൽ ചേർത്ത് വേഗത്തിൽ തുറക്കാം; ഓഫ്‌ലൈനായും വായിക്കാം.";
+ }
+}
+window.addEventListener("beforeinstallprompt",event=>{
+ event.preventDefault();deferredInstallPrompt=event;showInstallBanner("native");
+});
+window.addEventListener("appinstalled",()=>{
+ deferredInstallPrompt=null;installBanner.classList.remove("show");
+});
+installButton.addEventListener("click",async()=>{
+ if(deferredInstallPrompt){
+  deferredInstallPrompt.prompt();
+  await deferredInstallPrompt.userChoice;
+  deferredInstallPrompt=null;
+ }else if(ios){showInstallBanner("ios");}
+ else{showInstallBanner("manual");}
+});
+document.getElementById("dismissInstall").addEventListener("click",()=>installBanner.classList.remove("show"));
+if(!standalone && ios)showInstallBanner("ios");
+else if(!standalone)showInstallBanner("manual");
+
+if("serviceWorker"in navigator&&(location.protocol==="https:"||location.hostname==="localhost"))navigator.serviceWorker.register("./sw.js").catch(()=>{});
+updateOffline();loadPage(1);
+})();
+</script>
+</body>
+</html>

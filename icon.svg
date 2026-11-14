@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="QCF Quran Reader">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#456a55"/>
+      <stop offset="1" stop-color="#233f32"/>
+    </linearGradient>
+  </defs>
+  <rect width="512" height="512" rx="112" fill="url(#bg)"/>
+  <circle cx="256" cy="256" r="174" fill="none" stroke="#d9c18b" stroke-width="8" opacity=".9"/>
+  <path d="M256 105 286 178 365 147 334 226 407 256 334 286 365 365 286 334 256 407 226 334 147 365 178 286 105 256 178 226 147 147 226 178Z"
+        fill="none" stroke="#e8d7ad" stroke-width="7" stroke-linejoin="round" opacity=".95"/>
+  <path d="M174 190 Q215 166 256 190 Q297 166 338 190 L338 322 Q297 298 256 322 Q215 298 174 322Z"
+        fill="#fffdf6" stroke="#d9c18b" stroke-width="9" stroke-linejoin="round"/>
+  <path d="M256 190V322" stroke="#b79b62" stroke-width="7"/>
+  <path d="M194 218 Q222 206 242 218 M194 244 Q222 232 242 244 M270 218 Q290 206 318 218 M270 244 Q290 232 318 244"
+        fill="none" stroke="#456a55" stroke-width="8" stroke-linecap="round"/>
+  <path d="M204 278 Q230 270 242 278 M270 278 Q282 270 308 278" fill="none" stroke="#b18a45" stroke-width="7" stroke-linecap="round"/>
+</svg>

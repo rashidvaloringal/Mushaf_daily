@@ -1,0 +1,20 @@
+{
+  "id": "./",
+  "name": "QCF V1 — Modern Islamic Quran",
+  "short_name": "QCF Quran",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#f4f7f0",
+  "theme_color": "#176b4b",
+  "description": "QCF V1 ഫോണ്ടിൽ തുടർച്ചയായി സ്ക്രോൾ ചെയ്ത് ഖുർആൻ വായിക്കാനുള്ള റീഡർ.",
+  "icons": [
+    {
+      "src": "./icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}
